@@ -46,7 +46,8 @@ const userLocation = () => {
   }
 }
 
-document.onload = userLocation();
+// window.onload = userLocation;
+userLocation();
 
 cityForm.addEventListener('submit', (e) => {
   e.preventDefault();
