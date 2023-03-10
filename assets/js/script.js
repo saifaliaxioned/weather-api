@@ -1,36 +1,23 @@
 const apiKey = 'e2ee9ad2eb29f4a7f86758f6e0395c6d',
   cityForm = document.querySelector('.city-form'),
   cityName = document.querySelector('.city-input'),
-  currentDay = document.querySelector('.day'),
-  date = document.querySelector('.date'),
-  dateMonth = document.querySelector('.date-month'),
-  weatherIcon = document.querySelector('.icon img'),
-  cityHumidity = document.querySelector('.humidity'),
-  cityWind = document.querySelector('.wind'),
   inputError = document.querySelector('.input-error'),
   inputGroup = document.querySelector('.input-group'),
+  stringPattern = /^[a-zA-Z]+$/,
   weatherContainer = document.querySelector('.weather-container');
-let span;
+let isValid;
 
 const fetchData = (url, err) => {
   fetch(url).then((response) => {
     if (response.status === 404) {
       throw err;
     } else {
-      if (span) {
-        span.remove();
-        // weatherContainer.classList.remove('hide-content');
-      }
       return response.json();
     }
   }).then((data) => {
     showData(data);
   }).catch((error) => {
-    // weatherContainer.classList.add('hide-content');
-    span = document.createElement('span');
-    span.classList.add('input-error');
-    span.innerHTML = `<span class="input-error">${error}</span>`;
-    inputGroup.appendChild(span);
+    createError(cityName, error);
   });
 }
 
@@ -49,9 +36,37 @@ const userLocation = () => {
 // window.onload = userLocation;
 userLocation();
 
+const createError = (input, err) => {
+  const inputGroup = input.parentElement;
+  const error = document.createElement('span');
+  error.classList.add('input-error');
+  error.innerText = err;
+  inputGroup.appendChild(error);
+}
+
+const validateInput = (input, pattern) => {
+  isValid = true;
+  const errorActive = document.querySelector('.input-error');
+  if (errorActive) {
+    errorActive.remove();
+  }
+  if (!input.value) {
+    createError(input, '*Field is required');
+    isValid = false;
+  } else if (!pattern.test(input.value)) {
+    createError(input, '*Space and Numbers are not allowed');
+    isValid = false;
+  }
+  return isValid;
+}
+
 cityForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  fetchData(`https://api.openweathermap.org/data/2.5/weather?q=${cityName.value}&appid=${apiKey}&units=metric`, 'There are problem with request, please enter proper city name!');
+  validateInput(cityName, stringPattern);
+  const errorActive = document.querySelector('.input-error');
+  if (isValid && !errorActive) {
+    fetchData(`https://api.openweathermap.org/data/2.5/weather?q=${cityName.value}&appid=${apiKey}&units=metric`, 'There are problem with request, please enter proper city name!');
+  }
 });
 
 const showData = (data) => {
